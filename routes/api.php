@@ -41,3 +41,8 @@ Route::delete('delete-product/{product_id}', [AdminProductController::class, 'de
 Route::get('orders', [AdminOrderController::class, 'getOrders']);
 Route::post('update-order-status', [AdminOrderController::class, 'updateOrderStatus']);
 });
+
+
+Route::get('welcome', function () {
+    return 'hello vercel with laravel';
+});
