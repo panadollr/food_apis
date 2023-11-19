@@ -20,9 +20,18 @@ class AdminNewsController
             'date' => $date
         ]);
         if($result){
-            return ['success' => 'Đăng bài thành công !'];
+            return ['success' => 'Đăng bài viết thành công !'];
         } else {
             return ['error' => "Lỗi !"];
         }
+    }
+
+    public function updateNews(Request $request){
+        $id = $request->id;
+        News::find($id)->update([
+            'content' => $request->content,
+            'date' => $request->date
+        ]);
+        return response()->json(['success' => "Cập nhật bài viết thành công !"], 200);
     }
 }
