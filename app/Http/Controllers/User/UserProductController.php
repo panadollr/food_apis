@@ -19,7 +19,6 @@ class UserProductController
         $limit = $request->limit ?? 12;
 
         $query = Product::query();
-
         if ($category_id && Category::find($category_id)) {
             $products = $query->where('category_id', $category_id)->paginate($limit);
         } else if($type == "moi-nhat"){
@@ -32,16 +31,14 @@ class UserProductController
             ->groupBy('products.id', 'products.name', 'products.image', 'products.old_price', 'products.new_price', 'products.description', 'product_quantity')
             ->skip($offset)->take($limit)->get();
         } else {
-            $products = $query->paginate(12);
+            $products = $query->paginate($limit);
         }
 
         $newProducts = [];
         $products->each(function ($product) {
             $old_price = $product->old_price;
             $new_price = $product->new_price;
-            if($new_price != 0 && $old_price != 0 && $old_price > $new_price){
                 $product->percent_discount = strval(round((($old_price - $new_price) / $old_price) * 100)) . "%";
-            }
             $product->old_price = number_format($product->old_price, 0, ',', '.') . ' đ';
             $product->new_price = number_format($product->new_price, 0, ',', '.') . ' đ';
         });
@@ -66,10 +63,14 @@ class UserProductController
         
 
         if ($matchingCategory) {
-            $products = Product::select('id', 'name', 'image', 'new_price', 'category_id')
-            ->where('category_id', '=', $matchingCategory->id)->paginate(12);
-            $products->each(function($product){
-                $product->new_price = number_format($product->new_price, 0, ',', '.') . ' đ';
+            $products = Product::select('id', 'name', 'image', 'old_price', 'new_price', 'category_id')
+            ->where('category_id', '=', $matchingCategory->id)->skip($offset)->take($limit)->get();;
+            $products->each(function ($product) {
+                $old_price = $product->old_price;
+                $new_price = $product->new_price;
+                $product->percent_discount = strval(round((($old_price - $new_price) / $old_price) * 100)) . "%";
+                $product->old_price = number_format($old_price, 0, ',', '.') . ' đ';
+                $product->new_price = number_format($new_price, 0, ',', '.') . ' đ';
             });
             if(count($products) < 0){
                return response()->json(['message' => 'Không có sản phẩm của danh mục này !'], 404);
@@ -89,20 +90,21 @@ class UserProductController
     if ($product) {
         $product->new_price = number_format($product->new_price, 0, ',', '.') . ' đ';
         $product->old_price = number_format($product->old_price, 0, ',', '.') . ' đ';
-        return $product;
+        return response()->json($product, 200);
     } else {
-        return ['message' => 'Sản phẩm không tồn tại!'];
+        return response()->json(['message' => 'Sản phẩm không tồn tại!'], 404);
     }
 }
 
     public function searchProducts(Request $request){
         $product_name = $request->product_name;
-        $existingProducts = Product::select(['id', 'name', 'image', 'new_price'])
+        $existingProducts = Product::select(['id', 'name', 'image', 'new_price', 'old_price'])
         ->where('name', 'LIKE', '%' . $product_name . '%')->get();
         
         if(count($existingProducts) > 0){
             $existingProducts->map(function ($product) {
                 $product->new_price = number_format($product->new_price, 0, ',', '.') . ' đ';
+                $product->old_price = number_format($product->old_price, 0, ',', '.') . ' đ';
                 return $product;
             });
             return response()->json($existingProducts, 200);

@@ -9,6 +9,16 @@ use App\Http\Controllers\User\UserCategoryController;
 use App\Http\Controllers\User\UserProductController;
 use App\Http\Controllers\User\UserOrderController;
 
+//ADMIN
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\AdminSlideController;
+use App\Http\Controllers\Admin\AdminNewsController;
+use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\AdminProductController;
+use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\Admin\AdminUserController;
+
+//USER
 Route::get('categories', [UserCategoryController::class, 'getCategories']);
 Route::get('products', [UserProductController::class, 'getProducts']);
 Route::get('products-of-category/{category_slug}', [UserProductController::class, 'getProductsByCategorySlug']);
@@ -22,27 +32,11 @@ Route::post('submit-referral-code', [UserOrderController::class, 'submitReferral
 Route::post('order', [UserOrderController::class, 'order']);
 
 
-
-
 //ADMIN
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\AdminSlideController;
-use App\Http\Controllers\Admin\AdminNewsController;
-use App\Http\Controllers\Admin\AdminCategoryController;
-use App\Http\Controllers\Admin\AdminProductController;
-use App\Http\Controllers\Admin\AdminOrderController;
-
 Route::prefix('admin')->middleware('cors')->group(function () {
 Route::get('general-information', [DashboardController::class, 'generalInformation']);
 Route::get('slides', [AdminSlideController::class, 'getSlides']);
-Route::get('top-categories', [DashboardController::class, 'topCategories']);
 Route::get('top-products', [DashboardController::class, 'topProducts']);
-Route::get('news', [AdminNewsController::class, 'getNews']);
-Route::post('add-news', [AdminNewsController::class, 'addNews']);
-Route::post('update-news', [AdminNewsController::class, 'updateNews']);
-Route::get('categories', [AdminCategoryController::class, 'getCategories']);
-Route::post('add-category', [AdminCategoryController::class, 'addCategory']);
-Route::delete('delete-category/{category_id}', [AdminCategoryController::class, 'deleteCategory']);
 Route::get('products', [AdminProductController::class, 'getProducts']);
 Route::get('product/{product_id}', [AdminProductController::class, 'getProductDetails']);
 Route::get('search-products', [AdminProductController::class, 'searchProducts']);
@@ -52,9 +46,7 @@ Route::post('update-product', [AdminProductController::class, 'updateProduct']);
 Route::get('orders', [AdminOrderController::class, 'getOrders']);
 Route::get('order-details/{order_id}', [AdminOrderController::class, 'getOrderDetails']);
 Route::post('update-order-status', [AdminOrderController::class, 'updateOrderStatus']);
+Route::get('users', [AdminUserController::class, 'getUsers']);
+Route::get('delete-user/{id}', [AdminUserController::class, 'deleteUser']);
 });
 
-
-Route::get('welcome', function () {
-    return 'hello vercel with laravel';
-});

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\admin;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 
 use App\Models\Slide;
 
