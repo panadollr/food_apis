@@ -79,7 +79,7 @@ class AdminProductController
         $name = $request->name;
         $existingProduct = Product::where('name', $name)->first();
         if($existingProduct){
-            return ['error' => 'Tên sản phẩm đã tồn tại !'];
+            return response()->json(['error' => 'Tên sản phẩm đã tồn tại !'], 404);
         }
         // $get_image= $request-> file('image');
         //      $new_image =rand(0,99).'.'.$get_image->getClientOriginalExtension();
@@ -152,7 +152,7 @@ class AdminProductController
             });
             return response()->json($existingProducts, 200);
         } else {
-            return response()->json(['error' => 'Không tìm thấy sản phẩm !'], 404);
+            return response()->json('Không tìm thấy sản phẩm !', 404);
         }
     }
 

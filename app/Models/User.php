@@ -19,7 +19,8 @@ class User extends Authenticatable
         'name',
         'phone',
         'password',
-        'referral_code'
+        'referral_code',
+        'used_referral_codes'
     ];
 
 }

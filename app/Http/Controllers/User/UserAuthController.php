@@ -65,8 +65,10 @@ class UserAuthController
                  return response()->json([
                     'successful' => 'Đăng nhập thành công !',
                     'user' => [
+                        'id' => $existingUser->id,
                         'phone' => $phone,
                         'name' => $existingUser->name,
+                        'referral_code' => $existingUser->referral_code,
                     ]
                 ]); 
             } else {

@@ -16,14 +16,21 @@ class UserOrderController
 {
     
     public function submitReferralCode(Request $request){
-        $referralCode = $request->referral_code;
-        $existingUser = User::where('referral_code', $referralCode)->first();
-        if($existingUser){
-            return ['success' => "Mã giới thiệu của tài khoản có số điện thoại: 0$existingUser->phone" ];
-        }else {
-            return ['error' => "Mã giới thiệu không tồn tại !"];
-        }
+    $referralCode = $request->referral_code;
+    $existingUser = User::where('referral_code','=' , $referralCode)->first();
+    if (!$existingUser) {
+        return response()->json("Mã giới thiệu không tồn tại !", 404);
     }
+    $usedReferralCodes = json_decode($existingUser->used_referral_codes, true) ?: [];
+    if (in_array($referralCode, $usedReferralCodes)) {
+        return response()->json("Bạn đã sử dụng mã này!", 404);
+    }
+    $usedReferralCodes[] = $referralCode;
+    $newReferralCodes = json_encode($usedReferralCodes);
+    $existingUser->update(['used_referral_codes' => $newReferralCodes]);
+
+    return response()->json("Đã áp dụng mã giới thiệu của tài khoản: $existingUser->phone", 200);
+}
     
 
     public function order(Request $request){
@@ -72,12 +79,7 @@ class UserOrderController
             $newOrderId = $newOrder->order_id;
     
             // Order Detail
-            $carts = [
-                ['id' => 1, 'quantity' => 20],
-                ['id' => 2, 'quantity' => 3],
-                ['id' => 3, 'quantity' => 10],
-                ['id' => 4, 'quantity' => 6],
-            ];
+            $carts = json_decode($request->carts, true);
     
             $orderDetails = [];
             foreach ($carts as $cart) {
@@ -102,6 +104,30 @@ class UserOrderController
         }
     
         return ['success' => 'Đặt hàng thành công !'];
+    }
+
+    public function getOrders(Request $request){
+        $phone = $request->phone;
+        $order_details = OrderDetail::join('shippings', 'shippings.order_id', 'order_details.order_id')
+        ->join('orders', 'orders.order_id', '=', 'order_details.order_id')
+        ->join('products', 'products.id', 'order_details.product_id')
+        ->select('order_detail_id as id', 'products.name as product_name', 'products.image as product_image', 'product_quantity', 'products.new_price', 
+        'shippings.shipping_phone', 'orders.order_date', 'orders.order_status', 'orders.payment_method_id')
+        ->where('shipping_phone', '=', $phone)
+        ->selectRaw('sum(product_quantity * products.new_price) as product_total')
+        ->groupBy('shipping_phone', 'order_detail_id', 'products.name', 'product_quantity', 'products.new_price', 'order_date', 'order_status', 
+        'payment_method_id', 'product_image')
+        ->get();
+
+        $order_details->each(function ($order_detail) {
+            $new_price = $order_detail->new_price;
+            $product_total = (int) $order_detail->product_total;
+            $order_detail->new_price = number_format($new_price, 0, ',', '.') . ' đ';
+            $order_detail->product_total = number_format($product_total, 0, ',', '.') . ' đ';
+            unset($product_total);
+        });
+           
+        return response()->json($order_details, 200);
     }
     
 }

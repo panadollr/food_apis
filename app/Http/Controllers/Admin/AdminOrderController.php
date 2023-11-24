@@ -35,15 +35,12 @@ class AdminOrderController
 
     public function updateOrderStatus(Request $request){
         $order_id = $request->order_id;
-        $query = Order::query()->where('order_id', $order_id);
-        $order = $query->first();
-        $order_status = $order->order_status;
-        
-        if ($order_status >= 0 && $order_status < 2) {
-            $query->update(['order_status' => $order_status + 1]);
-            return ['success' => "Cập nhật tình trạng đơn hàng thành công!"];
+        $order_status = $request->order_status;
+        if($order_status !== null){
+            Order::where('order_id', $order_id)->update(['order_status' => $order_status]);
+            return response()->json("Cập nhật tình trạng đơn hàng thành công!", 200);
         } else {
-            return ['error' => "Không thể cập nhật tình trạng đơn hàng."];
+            return response()->json("Lỗi!", 404);
         }
     }
 

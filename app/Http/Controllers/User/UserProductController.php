@@ -24,12 +24,27 @@ class UserProductController
         } else if($type == "moi-nhat"){
             $products = $query->orderBy('id','desc')->skip($offset)->take($limit)->get();;
         } else if($type == "ban-chay"){
-            $products = $query->join('order_details', 'order_details.product_id', 'products.id')
-            ->orderBy('order_details.product_quantity', 'desc')
-            ->select('products.id', 'products.name', 'products.image', 'products.old_price', 'products.new_price', 'products.description')
-            ->selectRaw('SUM(order_details.product_quantity) as product_quantity')
-            ->groupBy('products.id', 'products.name', 'products.image', 'products.old_price', 'products.new_price', 'products.description', 'product_quantity')
-            ->skip($offset)->take($limit)->get();
+            // $products = $query->join('order_details', 'order_details.product_id', 'products.id')
+            // ->orderBy('order_details.product_quantity', 'desc')
+            // ->select('products.id', 'products.name', 'products.image', 'products.old_price', 'products.new_price', 'products.description')
+            // ->selectRaw('SUM(order_details.product_quantity) as product_quantity')
+            // ->groupBy('products.id', 'products.name', 'products.image', 'products.old_price', 'products.new_price', 'products.description', 'product_quantity')
+            // ->skip($offset)->take($limit)->get();
+            $products = $query->join('order_details', 'order_details.product_id', '=', 'products.id')
+    ->groupBy('products.id', 'products.name', 'products.image', 'products.old_price', 'products.new_price', 'products.description')
+    ->orderByDesc('product_quantity')
+    ->select([
+        'products.id',
+        'products.name',
+        'products.image',
+        'products.old_price',
+        'products.new_price',
+        'products.description',
+        \DB::raw('SUM(order_details.product_quantity) as product_quantity')
+    ])
+    ->skip($offset)
+    ->take($limit)
+    ->get();
         } else {
             $products = $query->paginate($limit);
         }
@@ -38,9 +53,7 @@ class UserProductController
         $products->each(function ($product) {
             $old_price = $product->old_price;
             $new_price = $product->new_price;
-                $product->percent_discount = strval(round((($old_price - $new_price) / $old_price) * 100)) . "%";
-            $product->old_price = number_format($product->old_price, 0, ',', '.') . ' đ';
-            $product->new_price = number_format($product->new_price, 0, ',', '.') . ' đ';
+            $product->percent_discount = strval(round((($old_price - $new_price) / $old_price) * 100)) . "%";
         });
 
         if($type == "sieu-giam-gia") {
@@ -88,8 +101,6 @@ class UserProductController
     $product = Product::find($id);
 
     if ($product) {
-        $product->new_price = number_format($product->new_price, 0, ',', '.') . ' đ';
-        $product->old_price = number_format($product->old_price, 0, ',', '.') . ' đ';
         return response()->json($product, 200);
     } else {
         return response()->json(['message' => 'Sản phẩm không tồn tại!'], 404);
@@ -121,8 +132,11 @@ class UserProductController
                    ->get();
 
         $products->each(function($product){
-            $product->new_price = number_format($product->new_price, 0, ',', '.') . ' đ'; 
-            $product->old_price = number_format($product->old_price, 0, ',', '.') . ' đ'; 
+            $old_price = $product->old_price;
+            $new_price = $product->new_price;
+            $product->percent_discount = strval(round((($old_price - $new_price) / $old_price) * 100)) . "%";
+            $product->old_price = number_format($old_price, 0, ',', '.') . ' đ';
+            $product->new_price = number_format($new_price, 0, ',', '.') . ' đ';
         });
 
         return $products;
