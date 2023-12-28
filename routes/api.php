@@ -20,7 +20,7 @@ use App\Http\Controllers\Admin\AdminUserController;
 Route::get('categories', [UserCategoryController::class, 'getCategories']);
 Route::get('products', [UserProductController::class, 'getProducts']);
 Route::get('products-of-category/{category_slug}', [UserProductController::class, 'getProductsByCategorySlug']);
-Route::get('similiar-products/{product_id}', [UserProductController::class, 'getSimiliarProducts']);
+Route::get('similar-products/{product_id}', [UserProductController::class, 'getSimiliarProducts']);
 Route::get('product/{product_id}', [UserProductController::class, 'getProductDetails']);
 Route::get('product-details', [UserProductController::class, 'getProductDetails']);
 Route::get('search-products', [UserProductController::class, 'searchProducts']);
