@@ -17,7 +17,6 @@ class UserAuthController
             'required' => ':attribute là bắt buộc, không được để trống !',
             'regex' => ':attribute không hợp lệ.',
             'unique' => ':attribute đã tồn tại trong hệ thống.',
-            'min' => ':attribute phải có ít nhất :min ký tự.',
         ];
 
         $customAttributes = [
@@ -29,7 +28,7 @@ class UserAuthController
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
             'phone' => ['required', 'regex:/^(\+84|0)[3|5|7|8|9][0-9]{8}$/', 'unique:users'],
-            'password' => 'required|string|min:8',
+            'password' => 'required|string',
         ], $customMessages, $customAttributes);
     
         if ($validator->fails()) {
