@@ -13,54 +13,53 @@ class UserProductController
 {
     
     public function getProducts(Request $request){
-        $category_id = $request->category_id;
-        $type = $request->type;
-        $offset = $request->offset ?? 0;
-        $limit = $request->limit ?? 12;
-
-        $query = Product::query();
-        if ($category_id && Category::find($category_id)) {
-            $products = $query->where('category_id', $category_id)->paginate($limit);
-        } else if($type == "moi-nhat"){
-            $products = $query->orderBy('id','desc')->skip($offset)->take($limit)->get();;
-        } else if($type == "ban-chay"){
-            // $products = $query->join('order_details', 'order_details.product_id', 'products.id')
-            // ->orderBy('order_details.product_quantity', 'desc')
-            // ->select('products.id', 'products.name', 'products.image', 'products.old_price', 'products.new_price', 'products.description')
-            // ->selectRaw('SUM(order_details.product_quantity) as product_quantity')
-            // ->groupBy('products.id', 'products.name', 'products.image', 'products.old_price', 'products.new_price', 'products.description', 'product_quantity')
-            // ->skip($offset)->take($limit)->get();
-            $products = $query->join('order_details', 'order_details.product_id', '=', 'products.id')
-    ->groupBy('products.id', 'products.name', 'products.image', 'products.old_price', 'products.new_price', 'products.description')
-    ->orderByDesc('product_quantity')
-    ->select([
-        'products.id',
-        'products.name',
-        'products.image',
-        'products.old_price',
-        'products.new_price',
-        'products.description',
-        \DB::raw('SUM(order_details.product_quantity) as product_quantity')
-    ])
-    ->skip($offset)
-    ->take($limit)
-    ->get();
-        } else {
-            $products = $query->paginate($limit);
+        try {
+            $category_id = $request->category_id;
+            $type = $request->type;
+            $offset = $request->offset ?? 0;
+            $limit = $request->limit ?? 12;
+    
+            $query = Product::query();
+            if ($category_id && Category::find($category_id)) {
+                $products = $query->where('category_id', $category_id)->paginate($limit);
+            } else if($type == "moi-nhat"){
+                $products = $query->orderBy('id','desc')->skip($offset)->take($limit)->get();;
+            } else if($type == "ban-chay"){
+                $products = $query->join('order_details', 'order_details.product_id', '=', 'products.id')
+        ->groupBy('products.id', 'products.name', 'products.image', 'products.old_price', 'products.new_price', 'products.description')
+        ->orderByDesc('product_quantity')
+        ->select([
+            'products.id',
+            'products.name',
+            'products.image',
+            'products.old_price',
+            'products.new_price',
+            'products.description',
+            \DB::raw('SUM(order_details.product_quantity) as product_quantity')
+        ])
+        ->skip($offset)
+        ->take($limit)
+        ->get();
+            } else {
+                $products = $query->paginate($limit);
+            }
+    
+            $newProducts = [];
+            $products->each(function ($product) {
+                $old_price = $product->old_price;
+                $new_price = $product->new_price;
+                $product->percent_discount = strval(round((($old_price - $new_price) / $old_price) * 100)) . "%";
+            });
+    
+            if($type == "sieu-giam-gia") {
+                $products = $products->sortByDesc('percent_discount')->values();
+            }
+               
+            return $products;
+        } catch (\Throwable $th) {
+            return $th->getMessage();
         }
-
-        $newProducts = [];
-        $products->each(function ($product) {
-            $old_price = $product->old_price;
-            $new_price = $product->new_price;
-            $product->percent_discount = strval(round((($old_price - $new_price) / $old_price) * 100)) . "%";
-        });
-
-        if($type == "sieu-giam-gia") {
-            $products = $products->sortByDesc('percent_discount')->values();
-        }
-           
-        return $products;
+       
     }
     
 
@@ -125,6 +124,7 @@ class UserProductController
     }
 
 
+    
     public function getSimiliarProducts($id){
         $category_id = Product::find($id)->category_id;
         $products = Product::where('id', '!=', $id)
