@@ -69,13 +69,13 @@ class UserAuthController
                         'name' => $existingUser->name,
                         'referral_code' => $existingUser->referral_code,
                     ]
-                ]); 
+                ], 200); 
             } else {
-                return response()->json(['error' => 'Mật khẩu không đúng !']); 
+                return response()->json(['error' => 'Mật khẩu không đúng !'], 404); 
             }
            
         } else {
-            return response()->json(['error' => 'Tài khoản không tồn tại trong hệ thống !']); 
+            return response()->json(['error' => 'Tài khoản không tồn tại trong hệ thống !'], 500); 
         }
     }
 }
