@@ -29,12 +29,12 @@ Route::post('login', [UserAuthController::class, 'login']);
 Route::post('submit-referral-code', [UserOrderController::class, 'submitReferralCode']);
 Route::post('order', [UserOrderController::class, 'order']);
 Route::get('orders', [UserOrderController::class, 'getOrders']);
+Route::get('slides', [AdminSlideController::class, 'getSlides']);
 
 
 //ADMIN
 Route::prefix('admin')->middleware('cors')->group(function () {
 Route::get('general-information', [DashboardController::class, 'generalInformation']);
-Route::get('slides', [AdminSlideController::class, 'getSlides']);
 Route::get('add-slide/{image}', [AdminSlideController::class, 'addSlide']);
 Route::get('update-slide/{id}/{image}', [AdminSlideController::class, 'updateSlide']);
 Route::get('top-products', [DashboardController::class, 'topProducts']);
